@@ -5,7 +5,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-
+#svm
 # Load the CSV
 input_file = 'your_file.csv'  # Update with the actual path to your file
 data = pd.read_csv(input_file)
