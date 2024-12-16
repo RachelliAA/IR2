@@ -270,75 +270,79 @@ def visualize_clusters(features_normalized, dbscan_labels, labels_encoded, input
 #     # Print out the number of clusters found by DBSCAN
 #     print(f"Number of clusters found: {len(set(dbscan_labels)) - (1 if -1 in dbscan_labels else 0)}")
 #
-def experiment_with_eps(features_normalized, labels_encoded, optimal_eps, eps_variation=0.1, n_variations=3):
-    best_accuracy = 0
-    best_eps = optimal_eps
 
-    # Experiment with epsilon variations around the optimal_eps
-    for delta in np.linspace(-eps_variation, eps_variation, n_variations):
-        eps = optimal_eps + delta
-        # Ensure eps is positive
-        eps = max(eps, 0.0001)  # Prevent eps from being too small or negative
-        print(eps)
-        # Apply DBSCAN with the adjusted epsilon value
-        dbscan_labels = apply_dbscan(features_normalized, eps=eps, min_samples=4)
+#testing with this function delete it...
+# def experiment_with_eps(features_normalized, labels_encoded, optimal_eps, eps_variation=0.1, n_variations=3):
+#     best_accuracy = 0
+#     best_eps = optimal_eps
+#
+#     # Experiment with epsilon variations around the optimal_eps
+#     for delta in np.linspace(-eps_variation, eps_variation, n_variations):
+#         eps = optimal_eps + delta
+#         # Ensure eps is positive
+#         eps = max(eps, 0.0001)  # Prevent eps from being too small or negative
+#         print(eps)
+#         # Apply DBSCAN with the adjusted epsilon value
+#         dbscan_labels = apply_dbscan(features_normalized, eps=eps, min_samples=4)
+#
+#         # Evaluate the clustering performance
+#         accuracy, _, _, _ = evaluate_clustering(labels_encoded, dbscan_labels)
+#
+#         if accuracy > best_accuracy:
+#             best_accuracy = accuracy
+#             best_eps = eps
+#
+#     return best_eps, best_accuracy
+#
+#
+# def main(input_file):
+#     # Load the data
+#     features, labels = load_data(input_file)
+#
+#     # Preprocess the features
+#     features_scaled = preprocess_features(features)
+#
+#     # Apply PCA for dimensionality reduction (optional)
+#     features_scaled = apply_pca(features_scaled, n_components=4)
+#
+#     # Encode labels to numeric values
+#     le = LabelEncoder()
+#     labels_encoded = le.fit_transform(labels)
+#
+#     # Normalize the features
+#     features_normalized = normalize(features_scaled)
+#
+#     # Find the optimal eps value
+#     optimal_eps, k_distances = find_optimal_eps(features_normalized)
+#
+#     # Plot the k-distance graph
+#     plt.figure(figsize=(8, 6))
+#     plt.plot(np.sort(k_distances), marker='o')
+#     plt.title('K-distance Graph for DBSCAN', fontsize=16)
+#     plt.suptitle(f'epsilon= {optimal_eps}', fontsize=14)
+#     plt.xlabel('Data Points', fontsize=12)
+#     plt.ylabel('4th Nearest Neighbor Distance', fontsize=12)
+#     plt.grid(True)
+#     plt.show()
+#
+#     # Experiment with different eps values around the elbow
+#     best_eps, best_accuracy = experiment_with_eps(features_normalized, labels_encoded, optimal_eps)
+#
+#     print(f"\nBest epsilon found: {best_eps:.4f} with Accuracy: {best_accuracy:.4f}")
+#
+#     # Apply DBSCAN with the best eps found
+#     dbscan_labels = apply_dbscan(features_normalized, eps=best_eps, min_samples=4)
+#
+#     # Visualize the clustering results
+#     visualize_clusters(features_normalized, dbscan_labels, labels_encoded, input_file)
+#
+#     # Print out the number of clusters found by DBSCAN
+#     print(f"Number of clusters found: {len(set(dbscan_labels)) - (1 if -1 in dbscan_labels else 0)}")
+#
+#
+# # Run the script
+# if __name__ == "__main__":
+#     input_file = 'IR-Newspapers-files/IR-files/bert-sbert/bert_withoutIDF.csv'
+#     main(input_file)
+#
 
-        # Evaluate the clustering performance
-        accuracy, _, _, _ = evaluate_clustering(labels_encoded, dbscan_labels)
-
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
-            best_eps = eps
-
-    return best_eps, best_accuracy
-
-
-def main(input_file):
-    # Load the data
-    features, labels = load_data(input_file)
-
-    # Preprocess the features
-    features_scaled = preprocess_features(features)
-
-    # Apply PCA for dimensionality reduction (optional)
-    features_scaled = apply_pca(features_scaled, n_components=4)
-
-    # Encode labels to numeric values
-    le = LabelEncoder()
-    labels_encoded = le.fit_transform(labels)
-
-    # Normalize the features
-    features_normalized = normalize(features_scaled)
-
-    # Find the optimal eps value
-    optimal_eps, k_distances = find_optimal_eps(features_normalized)
-
-    # Plot the k-distance graph
-    plt.figure(figsize=(8, 6))
-    plt.plot(np.sort(k_distances), marker='o')
-    plt.title('K-distance Graph for DBSCAN', fontsize=16)
-    plt.suptitle(f'epsilon= {optimal_eps}', fontsize=14)
-    plt.xlabel('Data Points', fontsize=12)
-    plt.ylabel('4th Nearest Neighbor Distance', fontsize=12)
-    plt.grid(True)
-    plt.show()
-
-    # Experiment with different eps values around the elbow
-    best_eps, best_accuracy = experiment_with_eps(features_normalized, labels_encoded, optimal_eps)
-
-    print(f"\nBest epsilon found: {best_eps:.4f} with Accuracy: {best_accuracy:.4f}")
-
-    # Apply DBSCAN with the best eps found
-    dbscan_labels = apply_dbscan(features_normalized, eps=best_eps, min_samples=4)
-
-    # Visualize the clustering results
-    visualize_clusters(features_normalized, dbscan_labels, labels_encoded, input_file)
-
-    # Print out the number of clusters found by DBSCAN
-    print(f"Number of clusters found: {len(set(dbscan_labels)) - (1 if -1 in dbscan_labels else 0)}")
-
-
-# Run the script
-if __name__ == "__main__":
-    input_file = 'IR-Newspapers-files/IR-files/bert-sbert/bert_withoutIDF.csv'
-    main(input_file)

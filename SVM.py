@@ -82,62 +82,99 @@
 # plt.tight_layout(rect=[0, 0, 1, 0.95])
 # plt.show()
 
+##############################TESTING 0.97 accurecy####################################################
+# from sklearn.svm import SVC
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import accuracy_score
+#
+# import numpy as np
+# import pandas as pd
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.metrics.pairwise import cosine_similarity
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+#
+# # Assuming you have your data in X (features) and y (labels) arrays
+# input_file = 'IR-Newspapers-files/IR-files/bert-sbert/bert_withIDF.csv'
+# data = pd.read_csv(input_file)
+#
+# # Shuffle the data
+# data = data.sample(frac=1, random_state=42).reset_index(drop=True)
+#
+# # Prepare features and labels
+# X = data.drop(columns=['Sheet', 'RowIndex'])  # Drop non-feature columns
+# y = data['Sheet']
+#
+# # Split the data into training and testing sets
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#
+# # Create an SVC model
+# model = SVC()
+#
+# # Train the model
+# model.fit(X_train, y_train)
+#
+# # Make predictions on the test set
+# y_pred = model.predict(X_test)
+#
+# # Evaluate the model's accuracy
+# accuracy = accuracy_score(y_test, y_pred)
+# print("Accuracy:", accuracy)
 
-import numpy as np
+
+##############top 20 features good ###################################
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedKFold, cross_val_predict
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.metrics import accuracy_score
+from sklearn.inspection import permutation_importance
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-# Load the CSV file
+# Load the CSV
 input_file = 'IR-Newspapers-files/IR-files/bert-sbert/bert_withIDF.csv'
 data = pd.read_csv(input_file)
+
+# Shuffle the data
+data = data.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Prepare features and labels
 features = data.drop(columns=['Sheet', 'RowIndex'])  # Drop non-feature columns
 labels = data['Sheet']
 
-# Normalize features
+# Normalize the features
 scaler = StandardScaler()
 features_scaled = scaler.fit_transform(features)
 
-# Compute cosine similarity matrix
+# Encode labels to numerical values
+le = LabelEncoder()
+labels_encoded = le.fit_transform(labels)
+
+# Compute the cosine similarity matrix
 cosine_sim_matrix = cosine_similarity(features_scaled)
 
-# Contribution of each feature to cosine similarity
-contributions = []
-for i in range(features_scaled.shape[1]):  # Iterate over features
-    feature_matrix = np.outer(features_scaled[:, i], features_scaled[:, i])
-    contribution = np.abs(feature_matrix).sum()  # Absolute contribution across all pairs
-    contributions.append(contribution)
+# Define the SVM model with precomputed kernel
+model = SVC(kernel='precomputed')
+cv = StratifiedKFold(n_splits=10)
+y_pred = cross_val_predict(model, cosine_sim_matrix, labels_encoded, cv=cv)
 
-# Normalize contributions to sum to 1
-contributions = np.array(contributions)
-normalized_contributions = contributions / contributions.sum()
+# Train the SVM model on the entire dataset
+model.fit(cosine_sim_matrix, labels_encoded)
 
-# Get feature names and their importance
-feature_importance = pd.DataFrame({
-    "Feature": features.columns,
-    "Contribution": normalized_contributions
+# Calculate permutation feature importance
+result = permutation_importance(model, cosine_sim_matrix, labels_encoded, n_repeats=10, random_state=42, n_jobs=-1)
+
+# Get feature importances
+feature_importances = result.importances_mean[:features.shape[1]]
+
+# Create a DataFrame for the features and their importances
+features_df = pd.DataFrame({
+    'Feature': features.columns,
+    'Importance': feature_importances
 })
 
-# Sort by contribution
-feature_importance_sorted = feature_importance.sort_values(by="Contribution", ascending=False)
+# Sort the features by importance and get the top 20 features
+top_20_features = features_df.sort_values(by='Importance', ascending=False).head(20)
 
-# Top 20 features
-top_20_features = feature_importance_sorted.head(20)
-print("Top 20 features based on cosine similarity contribution:")
+# Print the top 20 features
 print(top_20_features)
-
-# Save to Excel
-#top_20_features.to_excel("svm_cosine_important_features.xlsx", index=False)
-
-# Plot top 20 features
-plt.figure(figsize=(12, 6))
-sns.barplot(data=top_20_features, x="Contribution", y="Feature", palette="viridis")
-plt.title("Top 20 Features by Contribution to Cosine Similarity", fontsize=16)
-plt.xlabel("Contribution", fontsize=12)
-plt.ylabel("Feature", fontsize=12)
-plt.tight_layout()
-plt.show()
