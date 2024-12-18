@@ -45,7 +45,7 @@ def rf(path):
     print(f"Mean CV Accuracy: {cv_scores.mean():.2f}")
 
     # Step 6: Train the Model on the Full Training Set
-    rf_clf.fit(X_train, y_train)
+    cv_scores.fit(X_train, y_train)
 
     # Step 7: Make Predictions
     y_pred = rf_clf.predict(X_test)
